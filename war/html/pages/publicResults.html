@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+	<title>Public Contest Results | $title</title>
+	<meta name="description" content="View public contest results including sweepstakes and category winners for the $title">
+	<meta name="robots" content="index, follow">
+	<meta name="tab" content="ContestResults">
+	<meta name="type" content="$type#if($level)$level.toString().toUpperCase()#end">
+	#parse("head.html")
+	<style type="text/css">
+		@media print {
+			.col-md-9 {
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100% !important;
+			}
+			@page {	size: potrait; }
+			a[href]:after { content: "" !important; }
+			.text-success { color: #3fb618 !important; }
+			.col-md-6 { page-break-inside: avoid; }
+		}
+		.highlighted { background-color: #f5f5f5 !important; }
+		table {	width: auto !important; }
+		th, td { text-align: center !important; }
+		td.row-header { font-weight: bold; }
+		.success { background-color: #3fb618; }
+		.error { background-color: #ff0039; }
+		.warning { background-color: #ff7518; }
+		.divider {
+			background-color: #bbb;
+			border-bottom: 0;
+			height: 1px;
+			margin: 9px 1px;
+		}
+		.nav-header {
+			text-transform: uppercase;
+			font-weight: bold;
+		}
+
+		table#statusTable td.btn { display: table-cell; }
+		#set($widthPercent = 100 / $subjects.size())
+		table#statusTable th.subject { width: $widthPercent%; }
+		table#statusTable { max-width: 550px; }
+
+		div#sidebarMenu {
+			z-index: 1000;
+			min-height: 100%;
+		}
+		@media (max-width: 767px) {
+			div#sidebarMenu {
+				background-color: white;
+			}
+		}
+
+		.scrollingDropdownMenu {
+			height: auto;
+			max-height: 400px;
+			overflow-x: hidden;
+			-webkit-overflow-scrolling: touch;
+			-moz-overflow-scrolling: touch;
+			-ms-overflow-scrolling: touch;
+			-o-overflow-scrolling: touch;
+			overflow-scrolling: touch;
+		}
+	</style>
+	<link type="text/css" href="/css/footer.css" rel="stylesheet">
+	<link type="text/css" href="/css/sticky-sidebar.css" rel="stylesheet">
+	<link type="text/css" href="/css/theme.bootstrap.css" rel="stylesheet">
+	<link type="text/css" href="/css/fontello.css" rel="stylesheet">
+	<link type="text/css" href="/css/offcanvas.css" rel="stylesheet">
+	<link type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
+</head>
+
+<body>
+	<div id="wrap">
+		#parse("navbar.html")
+
+		<div class="container">
+			<div class="row row-offcanvas row-offcanvas-right">
+				<div class="col-md-3 col-xs-6 hidden-print sidebar-offcanvas hidden-xs" id="sidebarMenu">
+					<ul class="nav nav-pills nav-stacked">
+						<li data-type="avail"><a href="/contestResults">Availability</a></li>
+
+						#foreach($level in $levels)
+							#if($enabledLevels.contains($level))
+								#set($LEVEL = $level.toString().toUpperCase())
+								<li class="nav-header"><h4>$level.getName() School</h4></li>
+								<li data-type="sweep$LEVEL"><a href="/contestResults?type=sweep&level=$level">Sweepstakes</a></li>
+								<li data-type="categorySweep$LEVEL"><a href="/contestResults?type=categorySweep&level=$level">Category Sweepstakes</a></li>
+								<li data-type="visualizations$LEVEL"><a href="/contestResults?type=visualizations&level=$level">Visualizations</a></li>
+								#if($level == $Level.valueOf("MIDDLE") && $qualifyingCriteria && $qualifyingCriteria != "{}")
+								<li class="dropdown">
+									<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+										Qualifying Students<b class="caret"></b>
+									</a>
+									<ul class="dropdown-menu scrollingDropdownMenu">
+										#foreach($schoolName in $schools[$level])
+											<li data-type="qualifying_$schoolName$LEVEL" id="qualifying_$schoolName.hashCode()">
+												<a href='/contestResults?type=qualifying_$esc.url($schoolName)&level=$level'>$schoolName</a>
+											</li>
+										#end
+									</ul>
+								</li>
+								#end
+
+								<li class="divider"></li>
+
+								#foreach($num in $level.getGrades())
+									<li id="${num}" class="dropdown">
+										<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+											${num}th Grade <b class="caret"></b>
+										</a>
+										<ul class="dropdown-menu">
+											#foreach($subject in $subjects)
+												<li data-type="category_${num}${subject}$LEVEL"><a href="/contestResults?type=category_${num}${subject}&level=$level">$subject.getName()</a></li>
+											#end
+										</ul>
+									</li>
+								#end
+							#end
+						#end
+						<p class="hidden-xs">
+							<a href="#backToTop" id="backToTop" class="well well-sm" style="display: none;">
+								<i class="glyphicon glyphicon-chevron-up"></i> Back to Top
+							</a>
+						</p>
+					</ul>
+					<div id="push"></div>
+				</div>
+
+				<div class="col-sm-9 col-xs-12">
+					<h1 style="white-space: nowrap; margin-top: 5px;">
+						Contest Results
+						<span class="pull-right visible-xs hidden-print" style="z-index: 1000;">
+							<button type="button" class="btn btn-primary btn-sm" data-toggle="offcanvas" style="margin-right: 5px; margin-bottom: 10px;">
+								<i class="fa fa-lg fa-bars"></i>
+							</button>
+						</span>
+						#include("printButton.html")
+					</h1>
+
+					#if(!$complete)
+						Results are not yet public, please return later.
+					#else
+						#if($type.startsWith("category_"))
+							#if($winners)
+								#parse("categoryWinners.html")
+							#else
+								Score information for this category is not yet available.
+							#end
+						#elseif($type.startsWith("qualifying_"))
+							#if($school)
+								<h2>$school.getName() Qualifying Students</h2>
+								#parse("qualifyingStudents.html")
+							#else
+								Score information for this school is not yet available.
+							#end
+						#elseif($type.equals("sweep"))
+							#parse("sweepstakesWinners.html")
+						#elseif($type.startsWith("categorySweep"))
+							#if($winners)
+								#parse("categorySweepstakes.html")
+							#else
+								Score information is not yet available.
+							#end
+						#elseif($type == "visualizations")
+							#if($statistics)
+								#parse("visualizations.html")
+							#else
+								Visualizations not yet available.
+							#end
+						#end
+					#end
+
+					#if($type == "avail" || !$complete)
+						#if($complete)
+							<span class="hidden-xs">Use the menu at the left to view specific results.</span>
+							<span class="visible-xs">Use the blue menu above to view specific results.</span>
+						#end
+
+						<h2>Tabulation Progress</h2>
+
+						<div id="testsGradedColumnGraph"></div>
+						<script type="text/javascript">
+							var testsGraded = JSON.parse('$testsGradedNums');
+							var grades = [
+									#foreach($level in $levels)
+										#if($enabledLevels.contains($level))
+											#foreach($grade in $level.getGrades())
+												"${grade}th Grade",
+											#end
+										#end
+									#end
+								],
+								testsGradedSeries = [
+									#foreach($subject in $subjects)
+									{
+										name: '$subject.getName()',
+										data: [
+											#foreach($level in $levels)
+												#if($enabledLevels.contains($level))
+													#foreach($grade in $level.getGrades())
+														testsGraded["$grade$subject"] ? testsGraded["$grade$subject"][0] / testsGraded["$grade$subject"][1] * 100 : 0,
+													#end
+												#end
+											#end
+										]
+									},
+									#end
+								];
+						</script>
+
+						<h3>Tie-Breaking Progress</h3>
+						<table class="table table-condensed" id="statusTable">
+							<thead>
+								<tr>
+									<th>Grade</th>
+									#foreach($subject in $subjects)
+									<th class="subject">$subject.getName()</th>
+									#end
+								</tr>
+							</thead>
+							<tbody>
+								#foreach($level in $levels)
+									#if($enabledLevels.contains($level))
+										#foreach($grade in $level.getGrades())
+											<tr>
+												<td class="row-header">${grade}th</td>
+												#foreach($subject in $subjects)
+													#if($testsGraded && $testsGraded.contains("$grade$subject"))
+														<td class="success" data-test="$grade$subject"><i class="glyphicon glyphicon-check"></i></td>
+													#else
+														<td class="warning" data-test="$grade$subject"><i class="glyphicon glyphicon-remove"></i></td>
+													#end
+												#end
+											</tr>
+										#end
+
+										#if(!$foreach.last)
+											<tr>
+												#foreach($i in [1..5])
+												<td></td>
+												#end
+											</tr>
+										#end
+									#end
+								#end
+							</tbody>
+						</table>
+					#end
+
+					<div class="visible-print well well-sm">
+						<p><i class="icon-time"></i> Last auto-generated <b>#if($date) $date #else never #end</b> | <a href="/contactUs">Contact Us</a> if you have any questions</p>
+					</div>
+
+					<div id="push"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="footer">
+		<div class="container text-center">
+			<p><i class="icon-time"></i> Last auto-generated <b>#if($date) $date #else never #end</b> | <a href="/contactUs">Contact Us</a> if you have any questions</p>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="/js/pagescripts/publicResults.js?$applicationVersion"></script>
+	<script type="text/javascript" src="/js/jquery/jquery.tablesorter.min.js"></script>
+	<script type="text/javascript" src="/js/jquery/jquery.tablesorter.widgets.min.js"></script>
+	#if($type.toLowerCase().endsWith("sweep"))
+	<script type="text/javascript" src="/js/score-popovers.js"></script>
+	#end
+	#if($type.endsWith("visualizations") || $type.equals("sweep") || $type == "avail" || !$complete)
+		<script type="text/javascript" src="/js/highcharts/highcharts.js"></script>
+		<script type="text/javascript" src="/js/highcharts/highcharts-more.js"></script>
+		<script type="text/javascript" src="/js/highcharts/exporting.js"></script>
+		<script type="text/javascript" src="/js/highcharts/theme.js"></script>
+	#end
+	#include("noscript.html")
+</body>
+</html>

@@ -1,0 +1,3 @@
+# Module contestmanagement
+# RPC service class, partial path of RPC policy file
+com.contest.management.client.GreetingService, FB4DD303E59253B247268843FF6FF616.gwt.rpc

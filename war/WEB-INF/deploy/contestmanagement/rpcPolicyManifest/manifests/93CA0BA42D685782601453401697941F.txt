@@ -1,0 +1,2 @@
+serviceClass: com.contest.management.client.GreetingService
+path: FB4DD303E59253B247268843FF6FF616.gwt.rpc

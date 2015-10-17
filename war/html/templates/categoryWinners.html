@@ -1,0 +1,63 @@
+#set($subject = $test.getSubject())
+
+<h2>
+	$test.getGrade()th Grade
+	$subject.getName() Winners
+</h2>
+
+<div class="table-responsive">
+	<table class="table table-striped table-condensed table-hover">
+		<thead>
+			<tr>
+				<th title="Click to sort">Rank</th>
+				<th title="Click to sort">Student Name</th>
+				<th title="Click to sort">School</th>
+				<th title="Click to sort">Score</th>
+			</tr>
+		</thead>
+		#set($lastPlacingScore = -1)
+		#set($lastPlace = -1)
+		#foreach($student in $winners)
+			#set($score = $student.getScore($subject))
+			#if($score.getScoreNum() < 0)
+				#break
+			#end
+			<tr>
+				#if($foreach.count > $trophy + $medal && !$admin)
+					#break
+				#end
+				<td>
+					#if($score.equals($lastPlacingScore))
+						$lastPlace
+					#else
+						$foreach.count
+						#set($lastPlace = $foreach.count)
+						#set($lastPlacingScore = $score)
+					#end
+					#if($foreach.count <= $trophy) <i class="fa fa-trophy"></i> #end
+					#if($foreach.count > $trophy && $foreach.count <= ($medal + $trophy)) <i class="iconfontello-medal"></i> #end
+				</td>
+				<td> #if($hideFullNames) $student.getPublicName() #else $student.getName() #end </td>
+
+				#set($schoolName = $student.getSchool().getName())
+				#if($admin)
+					<td><a href="/data/scores?type=school_$esc.url($schoolName)&level=$level">$schoolName</a></td>
+				#else
+					<td>$schoolName</td>
+				#end
+
+				#if($score)
+					<td> $score </td>
+					#if($admin)
+						#if($lastScore == $score && $score.getScoreNum() != $test.getMaxTeamScore() && $foreach.count <= $trophy + $medal)
+							<td class="danger">Tie detected</td>
+						#end
+						#set($lastScore = $student.getScore($subject))
+					#end
+				#else
+					<td><span class="text-danger">???</span></td>
+				#end
+			</tr>
+		#end
+	</table>
+</div>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+	<head>
+	<title>Directions to $school | $title</title>
+	<meta name="description" content="Get directions to the $title to attend our annual TMSCA tournament">
+	<meta name="robots" content="index, follow">
+	<meta name="tab" content="Directions">
+	#parse("head.html")
+	<style>
+		@media print {
+			.accordion-body { height: auto; }
+			a.infoWindow { display: none; }
+		}
+		.gm-style-iw { overflow: hidden !important; }
+		#map img { max-width: none; }
+		.infoWindow { font-family: 'Open Sans', Calibri, Candara, Arial, sans-serif; }
+		#map { page-break-before: always; page-break-inside: avoid; }
+	</style>
+</head>
+
+<body>
+	#parse("navbar.html")
+
+	<div class="container">
+		<h1>Directions to $school
+			#include("printButton.html")
+		</h1>
+
+		<br>
+		<div class="row">
+			<div class="col-md-4">
+				<div class="panel-group" id="accordion">
+					#foreach($entry in $directions.entrySet())
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h4 class="panel-title">
+								<a data-toggle="collapse" data-parent="#accordion" href="#collapse$foreach.index">$entry.key</a>
+							</h4>
+						</div>
+						<div id="collapse$foreach.index" class="panel-collapse collapse">
+							<div class="panel-body">
+								$entry.value
+							</div>
+						</div>
+					</div>
+					#end
+				</div>
+			</div>
+			<div class="col-md-8" id="map" style="height:500px">
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		var location_lat = $location.getLatitude(),
+			location_long = $location.getLongitude(),
+			address = '$esc.javascript($address)',
+			name = '$esc.javascript($school)';
+	</script>
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=false"></script>
+	<script type="text/javascript" src="/js/pagescripts/directions.js?$applicationVersion"></script>
+	#include("noscript.html")
+</body>
+</html>
